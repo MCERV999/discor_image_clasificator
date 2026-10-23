@@ -1,0 +1,31 @@
+import discord
+from discord.ext import commands
+from model import predict_image
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot=commands.Bot(command_prefix="!", intents=intents)
+@bot.event
+async def on_ready():
+    print("bot en linea conectate ya")
+
+@bot.command()
+async def check(ctx):
+    await ctx.send("por favor ingresa una imagen para analizarla")
+
+    def check_message(message):
+        return message.author == ctx .author and len (message.attachments) > 0
+
+    try:
+        message = await bot.wait_for("message", check=check_message, timeout=60)
+        image = message.attachments[0]
+        await image.save(f"img/{image.filename}")
+        await ctx.send("imagen recibida y lista para analizar")
+        result = predict_image(image_path=f"img/{image.filename}",model_path="keras_model.h5",label_path="labels.txt")
+        await ctx.send(f"resultado del analisis {result}")
+
+    except ValueError as e:
+
+        await ctx.send("no se recibio ninguna imagen a tiempo")
+bot.run("<TOKEN>")
